@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Guía de Unit Testing, Mockito, AAA y SOLID con Spring Boot</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm;
+    }
+
+    :root {
+      --ink: #17212b;
+      --muted: #5d6875;
+      --line: #d8dee7;
+      --soft: #f4f7fb;
+      --blue: #1d5f99;
+      --green: #16724d;
+      --amber: #916209;
+      --red: #a63737;
+      --code-bg: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.55;
+      background: white;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.15;
+      margin: 0 0 10px;
+    }
+
+    h1 {
+      font-size: 30pt;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-top: 28px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--line);
+      font-size: 19pt;
+      color: #102a43;
+      break-after: avoid;
+    }
+
+    h3 {
+      margin-top: 18px;
+      font-size: 14.5pt;
+      color: #143d5f;
+      break-after: avoid;
+    }
+
+    p {
+      margin: 0 0 10px;
+    }
+
+    ul, ol {
+      margin-top: 6px;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 5px;
+    }
+
+    .cover {
+      min-height: 245mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-left: 8px solid var(--blue);
+      padding-left: 26px;
+      break-after: page;
+    }
+
+    .eyebrow {
+      color: var(--blue);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-size: 9.5pt;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      font-size: 15pt;
+      color: var(--muted);
+      max-width: 620px;
+      margin-top: 12px;
+    }
+
+    .meta {
+      margin-top: 42px;
+      color: var(--muted);
+      font-size: 10.5pt;
+    }
+
+    .toc {
+      break-after: page;
+    }
+
+    .toc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .toc-item, .card, .analogy, .warning, .success, .note {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: white;
+    }
+
+    .toc-item {
+      background: var(--soft);
+      min-height: 74px;
+    }
+
+    .toc-item strong {
+      display: block;
+      color: #102a43;
+      margin-bottom: 4px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 12px 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .card strong {
+      color: #102a43;
+    }
+
+    .analogy {
+      border-left: 5px solid var(--green);
+      background: #f4fbf7;
+    }
+
+    .warning {
+      border-left: 5px solid var(--amber);
+      background: #fff9ec;
+    }
+
+    .success {
+      border-left: 5px solid var(--green);
+      background: #f3fbf6;
+    }
+
+    .note {
+      border-left: 5px solid var(--blue);
+      background: #f2f7fc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 16px;
+      font-size: 10.5pt;
+      break-inside: avoid;
+    }
+
+    th {
+      background: #eaf1f8;
+      color: #102a43;
+      text-align: left;
+      font-weight: 700;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      vertical-align: top;
+    }
+
+    code {
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 0.92em;
+      background: #edf2f7;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+
+    pre {
+      background: var(--code-bg);
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 12px 14px;
+      overflow: hidden;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 9pt;
+      line-height: 1.42;
+      white-space: pre-wrap;
+      break-inside: avoid;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 3px 5px 3px 0;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #eaf1f8;
+      color: #143d5f;
+      font-size: 9pt;
+      font-weight: 700;
+    }
+
+    .page-break {
+      break-before: page;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 9.8pt;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr 35px 1fr 35px 1fr;
+      align-items: stretch;
+      gap: 6px;
+      margin: 14px 0;
+    }
+
+    .flow-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--soft);
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 18pt;
+    }
+
+    .principle {
+      border-left: 5px solid var(--blue);
+      padding-left: 12px;
+      margin: 18px 0;
+      break-inside: avoid;
+    }
+
+    .footer-note {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 9.5pt;
+    }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="eyebrow">Spring Boot Testing</div>
+    <h1>Unit Testing, Mockito, Patrón AAA y Principios SOLID</h1>
+    <p class="subtitle">
+      Guía práctica basada en el proyecto <strong>unit-testing</strong>:
+      cómo pensar, escribir y entender pruebas en una aplicación Spring Boot.
+    </p>
+    <div class="meta">
+      <p><strong>Proyecto:</strong> Empresa API con Controller, Service, Repository y tests.</p>
+      <p><strong>Enfoque:</strong> explicación con analogías, cuadros, ejemplos y lectura de código.</p>
+      <p><strong>Objetivo:</strong> que puedas leer un test y saber qué historia está probando.</p>
+    </div>
+  </section>
+
+  <section class="toc">
+    <h2>Mapa De La Guía</h2>
+    <div class="toc-grid">
+      <div class="toc-item"><strong>1. Arquitectura Spring Boot</strong>Controller, Service, Repository y cómo se comunican.</div>
+      <div class="toc-item"><strong>2. Unit Testing</strong>Qué es una unidad y qué NO debería probar un unit test.</div>
+      <div class="toc-item"><strong>3. Mockito</strong>Mocks, stubs, <code>when</code>, <code>thenReturn</code>, <code>@Mock</code> e <code>@InjectMocks</code>.</div>
+      <div class="toc-item"><strong>4. Patrón AAA</strong>Arrange, Act, Assert aplicado a tus tests de Empresa.</div>
+      <div class="toc-item"><strong>5. Tests De Controller</strong><code>@WebMvcTest</code>, <code>MockMvc</code>, JSON y endpoints.</div>
+      <div class="toc-item"><strong>6. SOLID</strong>Los cinco principios explicados con ejemplos Spring Boot.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>1. La App Spring Boot Como Un Restaurante</h2>
+    <p>
+      Una aplicación Spring Boot suele dividirse en capas. Esa división ayuda a que cada parte tenga una responsabilidad clara.
+      En tu proyecto de Empresa se ve así:
+    </p>
+
+    <div class="flow">
+      <div class="flow-box">Controller<br><span class="small">recibe HTTP</span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box">Service<br><span class="small">decide reglas</span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box">Repository<br><span class="small">habla con DB</span></div>
+    </div>
+
+    <div class="analogy">
+      <strong>Analogía:</strong> piensa en un restaurante. El <strong>Controller</strong> es el mozo que recibe el pedido,
+      el <strong>Service</strong> es el chef que decide cómo prepararlo, y el <strong>Repository</strong> es la despensa
+      donde se guardan o buscan los ingredientes.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Capa</th>
+          <th>En tu proyecto</th>
+          <th>Responsabilidad</th>
+          <th>Qué se prueba</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Controller</td>
+          <td><code>EmpresaController</code></td>
+          <td>Recibir requests HTTP y devolver responses.</td>
+          <td>Rutas, status HTTP, estructura JSON.</td>
+        </tr>
+        <tr>
+          <td>Service</td>
+          <td><code>EmpresaServiceImpl</code></td>
+          <td>Aplicar reglas de negocio.</td>
+          <td>Decisiones: crear, actualizar, listar, eliminar.</td>
+        </tr>
+        <tr>
+          <td>Repository</td>
+          <td><code>EmpresaRepository</code></td>
+          <td>Consultar o guardar datos.</td>
+          <td>En unit test normalmente se reemplaza por un mock.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Flujo Real Al Crear Empresa</h3>
+    <ol>
+      <li>El usuario manda un <code>POST /empresa/v1/</code>.</li>
+      <li>El <code>EmpresaController</code> recibe el <code>EmpresaRequest</code>.</li>
+      <li>El controller llama a <code>empresaService.crear(request)</code>.</li>
+      <li>El service pregunta al repository si existe el documento.</li>
+      <li>Si existe, responde conflicto. Si no existe, guarda y responde OK/CREATED.</li>
+    </ol>
+  </section>
+
+  <section class="page-break">
+    <h2>2. Qué Es Unit Testing</h2>
+    <p>
+      Un <strong>unit test</strong> prueba una unidad pequeña del sistema. No intenta levantar todo el mundo.
+      Su misión es responder: “si esta pieza recibe estas condiciones, ¿devuelve el resultado esperado?”.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <strong>Unit test bueno</strong>
+        <p>Prueba una clase o método con dependencias controladas.</p>
+        <p>Ejemplo: probar <code>EmpresaServiceImpl.crear()</code> usando un <code>EmpresaRepository</code> falso.</p>
+      </div>
+      <div class="card">
+        <strong>Unit test confuso</strong>
+        <p>Depende de base de datos, red, servidores externos o datos cambiantes.</p>
+        <p>Si falla, no sabes si falló tu lógica, PostgreSQL, Docker o la configuración.</p>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <strong>Analogía:</strong> si quieres probar si una licuadora funciona, no necesitas abrir un restaurante completo.
+      Pones fruta, presionas el botón y miras si salió jugo. Eso es unit testing: aislar lo importante.
+    </div>
+
+    <h3>Qué Está Probando Tu Test De Service</h3>
+    <p>
+      En <code>EmpresaServiceImplTest</code> estás probando reglas como:
+    </p>
+    <ul>
+      <li>Si la empresa ya existe, no debe guardarse otra vez.</li>
+      <li>Si la empresa no existe, debe guardarse correctamente.</li>
+      <li>Si busco un ID existente, debe retornar la empresa.</li>
+      <li>Si busco un ID inexistente, debe retornar “No hay datos”.</li>
+      <li>Si actualizo una empresa inexistente, debe responder que no existe.</li>
+      <li>Si elimino una empresa existente, debe hacer eliminación lógica.</li>
+    </ul>
+
+    <div class="note">
+      <strong>Idea clave:</strong> no estás probando Hibernate ni PostgreSQL. Estás probando las decisiones de tu clase de servicio.
+    </div>
+  </section>
+
+  <section>
+    <h2>3. Mockito: Actores Para Tu Prueba</h2>
+    <p>
+      Mockito sirve para crear objetos falsos que simulan comportamientos. Estos objetos se llaman <strong>mocks</strong>.
+      En vez de usar una base de datos real, haces que el repository responda exactamente lo que necesitas para cada escenario.
+    </p>
+
+    <div class="analogy">
+      <strong>Analogía:</strong> Mockito es como contratar actores para una escena. El service es real, pero el repository
+      es un actor que dice las líneas que tú le escribes.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Mockito</th>
+          <th>Qué significa</th>
+          <th>Ejemplo mental</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>@Mock</code></td>
+          <td>Crea una dependencia falsa.</td>
+          <td>Una despensa falsa.</td>
+        </tr>
+        <tr>
+          <td><code>@InjectMocks</code></td>
+          <td>Crea la clase real e inyecta los mocks dentro.</td>
+          <td>Chef real usando despensa falsa.</td>
+        </tr>
+        <tr>
+          <td><code>when(...).thenReturn(...)</code></td>
+          <td>Define qué debe responder el mock.</td>
+          <td>“Si te preguntan X, responde Y”.</td>
+        </tr>
+        <tr>
+          <td><code>any()</code></td>
+          <td>Acepta cualquier argumento.</td>
+          <td>“No importa qué empresa llegue”.</td>
+        </tr>
+        <tr>
+          <td><code>anyString()</code></td>
+          <td>Acepta cualquier texto.</td>
+          <td>“No importa qué número de documento llegue”.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Ejemplo De Tu Proyecto</h3>
+    <pre><code>@Mock
+private EmpresaRepository empresaRepository;
+
+@InjectMocks
+private EmpresaServiceImpl empresaService;</code></pre>
+
+    <p>
+      Esto significa: “quiero probar el <code>EmpresaServiceImpl</code> real, pero no quiero una base de datos real.
+      Métele un <code>EmpresaRepository</code> falso”.
+    </p>
+
+    <pre><code>when(empresaRepository.existsByNumeroDocumento(anyString()))
+    .thenReturn(true);</code></pre>
+
+    <p>
+      Traducción: “cuando el service pregunte si existe una empresa por documento, responde que sí”.
+    </p>
+  </section>
+
+  <section class="page-break">
+    <h2>4. Patrón AAA</h2>
+    <p>
+      AAA es una forma simple y ordenada de escribir tests.
+    </p>
+
+    <div class="grid-3">
+      <div class="card">
+        <strong>Arrange</strong>
+        <p>Preparar el escenario.</p>
+        <p>Datos falsos, mocks y respuestas esperadas.</p>
+      </div>
+      <div class="card">
+        <strong>Act</strong>
+        <p>Ejecutar la acción.</p>
+        <p>Llamar al método real que quieres probar.</p>
+      </div>
+      <div class="card">
+        <strong>Assert</strong>
+        <p>Verificar el resultado.</p>
+        <p>Comparar lo obtenido con lo esperado.</p>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <strong>Analogía:</strong> quieres probar una alarma. Arrange: cierras la puerta y activas la alarma.
+      Act: abres la puerta. Assert: verificas que sonó.
+    </div>
+
+    <h3>AAA En Tu Test “Empresa Ya Existe”</h3>
+    <pre><code>@Test
+@DisplayName("Deberia retornar conflicto si la empresa ya existe")
+void testDeberiaRetornarEmpresaExiste() {
+    // Arrange
+    when(empresaRepository.existsByNumeroDocumento(anyString()))
+        .thenReturn(true);
+
+    // Act
+    ResponseEntity&lt;BaseResponse&lt;Empresa&gt;&gt; resultado =
+        empresaService.crear(empresaRequest);
+
+    // Assert
+    assertNotNull(resultado);
+    assertEquals(Constants.CODE_EXIST, resultado.getBody().getCode());
+    assertFalse(resultado.getBody().getObjeto().isPresent());
+}</code></pre>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Parte</th>
+          <th>Línea mental</th>
+          <th>Qué demuestra</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Arrange</td>
+          <td>El repository dice que la empresa ya existe.</td>
+          <td>Preparas el caso negativo.</td>
+        </tr>
+        <tr>
+          <td>Act</td>
+          <td>Llamas a <code>empresaService.crear()</code>.</td>
+          <td>Ejecutas la lógica real.</td>
+        </tr>
+        <tr>
+          <td>Assert</td>
+          <td>Esperas código de existencia y objeto vacío.</td>
+          <td>Confirmas que el service tomó la decisión correcta.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="success">
+      <strong>Regla práctica:</strong> cada test debe contar una historia clara. Si necesitas explicar demasiado el test,
+      quizá está probando muchas cosas a la vez.
+    </div>
+  </section>
+
+  <section>
+    <h2>5. Tests De Controller Con MockMvc</h2>
+    <p>
+      En <code>EmpresaControllerTest</code> ya no estás probando la lógica completa del service.
+      Estás probando la capa web: rutas, JSON, status HTTP y formato de respuesta.
+    </p>
+
+    <pre><code>@WebMvcTest
+class EmpresaControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private EmpresaService empresaService;
+}</code></pre>
+
+    <p>
+      <code>@WebMvcTest</code> levanta una parte pequeña de Spring enfocada en MVC.
+      El controller es real, pero el service se reemplaza por un mock.
+    </p>
+
+    <div class="analogy">
+      <strong>Analogía:</strong> aquí no estás probando al chef. Estás probando al mozo:
+      si recibe un pedido por la ruta correcta, si lo manda al service y si entrega una respuesta con buen formato.
+    </div>
+
+    <h3>Ejemplo: POST Para Registrar Empresa</h3>
+    <pre><code>mockMvc.perform(MockMvcRequestBuilders.post("/empresa/v1/")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(empresaRequest)))
+    .andExpect(status().isOk())
+    .andExpect(jsonPath("$.code").value(2001))
+    .andExpect(jsonPath("$.objeto.numeroDocumento").value("123456789"));</code></pre>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Elemento</th>
+          <th>Qué hace</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>MockMvc</code></td>
+          <td>Simula requests HTTP sin abrir un servidor real.</td>
+        </tr>
+        <tr>
+          <td><code>ObjectMapper</code></td>
+          <td>Convierte el objeto Java a JSON.</td>
+        </tr>
+        <tr>
+          <td><code>jsonPath("$.code")</code></td>
+          <td>Busca el campo <code>code</code> dentro del JSON de respuesta.</td>
+        </tr>
+        <tr>
+          <td><code>@MockBean</code></td>
+          <td>Reemplaza un bean de Spring por un mock dentro del contexto de test.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page-break">
+    <h2>6. Tipos De Pruebas En Spring Boot</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Qué prueba</th>
+          <th>Herramientas comunes</th>
+          <th>Cuándo usarlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Unit test</td>
+          <td>Una clase aislada.</td>
+          <td>JUnit, Mockito.</td>
+          <td>Reglas de negocio del service.</td>
+        </tr>
+        <tr>
+          <td>Web MVC test</td>
+          <td>Controller y capa web.</td>
+          <td><code>@WebMvcTest</code>, <code>MockMvc</code>.</td>
+          <td>Rutas, JSON, status.</td>
+        </tr>
+        <tr>
+          <td>Integration test</td>
+          <td>Varias capas juntas.</td>
+          <td><code>@SpringBootTest</code>, DB real o Testcontainers.</td>
+          <td>Validar que todo conecta bien.</td>
+        </tr>
+        <tr>
+          <td>Repository test</td>
+          <td>Consultas a base de datos.</td>
+          <td><code>@DataJpaTest</code>.</td>
+          <td>Probar queries, mappings y JPA.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="warning">
+      <strong>Importante:</strong> no todo test debe levantar Spring completo. Mientras más grande el contexto,
+      más lento y más difícil de diagnosticar será el fallo.
+    </div>
+  </section>
+
+  <section>
+    <h2>7. Principios SOLID En Spring Boot</h2>
+    <p>
+      SOLID son cinco principios para diseñar código más mantenible. No son reglas mágicas, pero sí ayudan a que
+      tu proyecto sea más fácil de probar, cambiar y entender.
+    </p>
+
+    <div class="analogy">
+      <strong>Analogía general:</strong> SOLID es como organizar una cocina profesional. Cada persona tiene una tarea,
+      las herramientas tienen un uso claro, y puedes cambiar una pieza sin destruir todo el restaurante.
+    </div>
+
+    <div class="principle">
+      <h3>S: Single Responsibility Principle</h3>
+      <p><strong>Una clase debe tener una sola razón para cambiar.</strong></p>
+      <p>
+        En Spring Boot, el controller no debería contener reglas de negocio ni SQL. El service no debería saber de HTTP puro.
+        El repository no debería decidir mensajes de respuesta.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Mal enfoque</th>
+            <th>Buen enfoque</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>El controller valida duplicados, guarda en DB y arma toda la lógica.</td>
+            <td>El controller recibe request y delega al service.</td>
+          </tr>
+          <tr>
+            <td>El service arma rutas HTTP.</td>
+            <td>El service aplica reglas: existe, no existe, guardar, actualizar.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        En tu proyecto, <code>EmpresaController</code> delega en <code>EmpresaService</code>. Eso se acerca bien a SRP.
+      </p>
+    </div>
+
+    <div class="principle">
+      <h3>O: Open/Closed Principle</h3>
+      <p><strong>El código debería estar abierto a extensión, pero cerrado a modificación.</strong></p>
+      <p>
+        Significa que si mañana agregas una nueva forma de validar empresas, idealmente no deberías romper todo lo existente.
+      </p>
+      <div class="analogy">
+        Si tienes una cafetera modular, puedes agregar un filtro nuevo sin reconstruir la cocina.
+      </div>
+      <p>
+        En Spring Boot esto se logra usando interfaces, clases pequeñas y estrategias. Por ejemplo:
+      </p>
+      <pre><code>public interface EmpresaValidator {
+    void validar(EmpresaRequest request);
+}</code></pre>
+      <p>
+        Luego podrías tener <code>DocumentoValidator</code>, <code>DireccionValidator</code> o <code>RucValidator</code>
+        sin meter todo dentro de un único método enorme.
+      </p>
+    </div>
+
+    <div class="principle">
+      <h3>L: Liskov Substitution Principle</h3>
+      <p><strong>Una implementación debe poder reemplazar a su abstracción sin romper el programa.</strong></p>
+      <p>
+        Si una clase promete comportarse como <code>EmpresaService</code>, cualquier implementación debería respetar ese contrato.
+      </p>
+      <div class="analogy">
+        Si pides “un cargador USB-C”, cualquier cargador compatible debería funcionar. Si uno tiene forma USB-C pero quema el equipo,
+        no respeta el contrato.
+      </div>
+      <p>
+        En Spring Boot, si tienes:
+      </p>
+      <pre><code>private final EmpresaService service;</code></pre>
+      <p>
+        El controller no debería depender de detalles internos de <code>EmpresaServiceImpl</code>.
+        Solo necesita que el contrato de <code>EmpresaService</code> se cumpla.
+      </p>
+    </div>
+
+    <div class="principle">
+      <h3>I: Interface Segregation Principle</h3>
+      <p><strong>Una clase no debería estar obligada a implementar métodos que no necesita.</strong></p>
+      <p>
+        Si una interfaz crece demasiado, las implementaciones terminan con métodos vacíos, falsos o con <code>return null</code>.
+      </p>
+      <div class="warning">
+        En tu service aparece <code>obtenerEmpresaXNumDoc</code> retornando <code>null</code>. Para aprender <code>assertNull</code>
+        está bien, pero en diseño real puede ser señal de contrato incompleto o método pendiente.
+      </div>
+      <p>
+        Si una interfaz tiene demasiadas responsabilidades, puedes separarla:
+      </p>
+      <pre><code>public interface EmpresaQueryService {
+    ResponseEntity&lt;BaseResponse&lt;Empresa&gt;&gt; obtenerEmpresa(Long id);
+}
+
+public interface EmpresaCommandService {
+    ResponseEntity&lt;BaseResponse&lt;Empresa&gt;&gt; crear(EmpresaRequest request);
+    ResponseEntity&lt;BaseResponse&lt;Empresa&gt;&gt; actualizar(Long id, EmpresaRequest request);
+}</code></pre>
+    </div>
+
+    <div class="principle">
+      <h3>D: Dependency Inversion Principle</h3>
+      <p><strong>Las clases de alto nivel deben depender de abstracciones, no de detalles concretos.</strong></p>
+      <p>
+        Tu controller depende de <code>EmpresaService</code>, no directamente de <code>EmpresaServiceImpl</code>.
+        Eso permite reemplazar la implementación, probar con mocks y mantener bajo el acoplamiento.
+      </p>
+      <div class="analogy">
+        Un conductor no debería depender de una marca específica de motor para manejar. Depende de una interfaz:
+        volante, acelerador, freno. El motor concreto puede cambiar.
+      </div>
+      <pre><code>@RestController
+@RequiredArgsConstructor
+public class EmpresaController {
+    private final EmpresaService service;
+}</code></pre>
+      <p>
+        Esta idea también hace posible tus tests de controller: reemplazas <code>EmpresaService</code> por un mock con
+        <code>@MockBean</code>.
+      </p>
+    </div>
+  </section>
+
+  <section class="page-break">
+    <h2>8. Cómo Pensar Un Test Nuevo</h2>
+    <p>
+      Antes de escribir código, escribe la historia del test en una frase.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Pregunta</th>
+          <th>Ejemplo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>¿Qué quiero probar?</td>
+          <td>Crear empresa cuando no existe.</td>
+        </tr>
+        <tr>
+          <td>¿Qué condición preparo?</td>
+          <td>El repository dice que el documento no existe.</td>
+        </tr>
+        <tr>
+          <td>¿Qué acción ejecuto?</td>
+          <td>Llamo a <code>empresaService.crear(request)</code>.</td>
+        </tr>
+        <tr>
+          <td>¿Qué resultado espero?</td>
+          <td>Código OK, objeto presente y llamada a <code>save</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Plantilla Recomendada</h3>
+    <pre><code>@Test
+@DisplayName("Deberia hacer X cuando ocurre Y")
+void deberiaHacerXCuandoOcurreY() {
+    // Arrange
+    // datos y mocks
+
+    // Act
+    // metodo real
+
+    // Assert
+    // verificaciones
+}</code></pre>
+
+    <h3>Checklist Mental</h3>
+    <ul>
+      <li>¿El nombre del test cuenta una historia?</li>
+      <li>¿El Arrange prepara solo lo necesario?</li>
+      <li>¿El Act tiene una acción principal?</li>
+      <li>¿El Assert verifica comportamiento, no detalles irrelevantes?</li>
+      <li>¿El test falla si la lógica real se rompe?</li>
+      <li>¿El test no depende de PostgreSQL si es unit test?</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>9. Mini Diccionario De Testing</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Término</th>
+          <th>Explicación simple</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>JUnit</td>
+          <td>Framework para escribir y ejecutar tests en Java.</td>
+        </tr>
+        <tr>
+          <td>Mockito</td>
+          <td>Librería para crear mocks y controlar dependencias falsas.</td>
+        </tr>
+        <tr>
+          <td>Mock</td>
+          <td>Objeto falso que simula una dependencia.</td>
+        </tr>
+        <tr>
+          <td>Stub</td>
+          <td>Respuesta preparada de un mock.</td>
+        </tr>
+        <tr>
+          <td>Assertion</td>
+          <td>Verificación de que algo ocurrió como esperabas.</td>
+        </tr>
+        <tr>
+          <td><code>@Test</code></td>
+          <td>Marca un método como prueba ejecutable.</td>
+        </tr>
+        <tr>
+          <td><code>@BeforeEach</code></td>
+          <td>Ejecuta preparación antes de cada test.</td>
+        </tr>
+        <tr>
+          <td><code>@WebMvcTest</code></td>
+          <td>Levanta solo la capa web para probar controllers.</td>
+        </tr>
+        <tr>
+          <td><code>@SpringBootTest</code></td>
+          <td>Levanta un contexto más completo de Spring.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>10. Resumen Final</h2>
+    <div class="success">
+      <p>
+        Si entiendes esta frase, entiendes la base de la clase:
+      </p>
+      <p>
+        <strong>Un buen test prepara un escenario, ejecuta una acción y verifica una consecuencia observable.</strong>
+      </p>
+    </div>
+
+    <p>
+      En tu proyecto, <code>EmpresaServiceImplTest</code> es el centro para entender unit testing y Mockito.
+      <code>EmpresaControllerTest</code> es el ejemplo para entender pruebas web con Spring Boot.
+      SOLID aparece por debajo como diseño: separar responsabilidades, depender de interfaces y escribir clases pequeñas
+      hace que testear sea mucho más fácil.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Frase para recordarlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Unit Test</td>
+          <td>Prueba una pieza pequeña, con el mundo controlado.</td>
+        </tr>
+        <tr>
+          <td>Mockito</td>
+          <td>Crea actores falsos para controlar dependencias.</td>
+        </tr>
+        <tr>
+          <td>AAA</td>
+          <td>Preparo, ejecuto, verifico.</td>
+        </tr>
+        <tr>
+          <td>SOLID</td>
+          <td>Diseña piezas pequeñas, reemplazables y fáciles de probar.</td>
+        </tr>
+        <tr>
+          <td>Spring Boot</td>
+          <td>Organiza la app en capas: controller, service, repository.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="footer-note">
+      Guía generada para estudiar sobre el proyecto local: C:\Users\OS\Documents\New project 9\unit-testing.
+    </p>
+  </section>
+</body>
+</html>
